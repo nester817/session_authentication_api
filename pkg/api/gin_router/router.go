@@ -1,11 +1,16 @@
 package router
 
-import "github.com/gin-gonic/gin"
+import (
+	"context"
+
+	"github.com/gin-gonic/gin"
+	customer "github.com/nester817/session_authentication_api.git/pkg/storage"
+)
 
 type DB interface {
-	GetUserByEmail()
-	InsertUser()
-	DeleteUserByEmail()
+	GetCustomerByEmail(ctx context.Context, email, password string) (*customer.Customer, error)
+	InsertCustomer(ctx context.Context, user customer.Customer) error
+	DeleteCustomer(ctx context.Context, email, password string) error
 }
 
 type Handler struct {
@@ -20,5 +25,11 @@ func NewHandler(db DB) *Handler {
 
 func (h *Handler) InitRouter() *gin.Engine {
 	r := gin.Default()
+	profile := r.Group("/profile")
+	{
+		profile.POST("/", h.AddProfile)
+		profile.DELETE("/", h.DeleteProfile)
+	}
+
 	return r
 }

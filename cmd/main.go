@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 
+	router "github.com/nester817/session_authentication_api.git/pkg/api/gin_router"
+	"github.com/nester817/session_authentication_api.git/pkg/api/server"
 	storage "github.com/nester817/session_authentication_api.git/pkg/storage/postgres"
 )
 
@@ -21,7 +23,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(db)
+
+	app := router.NewHandler(db)
+
+	if err := server.NewServer(":8080", app.InitRouter()).Run(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func GetConfig() (string, error) {

@@ -58,7 +58,7 @@ func NewDb(ctx context.Context, addr string, attempt int) (*Db, error) {
 	return nil, err
 }
 
-func (db *Db) GetUserByEmail(ctx context.Context, email, password string) (*customer.Customer, error) {
+func (db *Db) GetCustomerByEmail(ctx context.Context, email, password string) (*customer.Customer, error) {
 	var user customer.Customer
 
 	if err := db.client.QueryRow(
@@ -74,7 +74,7 @@ func (db *Db) GetUserByEmail(ctx context.Context, email, password string) (*cust
 	return &user, nil
 }
 
-func (db *Db) InsertUser(ctx context.Context, user *customer.Customer) error {
+func (db *Db) InsertCustomer(ctx context.Context, user customer.Customer) error {
 	_, err := db.client.Exec(
 		ctx,
 		`INSERT INTO public.customer (name, email, password) 
@@ -84,7 +84,7 @@ func (db *Db) InsertUser(ctx context.Context, user *customer.Customer) error {
 	return err
 }
 
-func (db *Db) DeleteUserByEmail(ctx context.Context, email, password string) error {
+func (db *Db) DeleteCustomer(ctx context.Context, email, password string) error {
 	_, err := db.client.Exec(
 		ctx,
 		`DELETE FROM public.customer

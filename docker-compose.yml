@@ -1,3 +1,4 @@
+
 services:
   app:
     build: .
@@ -7,20 +8,31 @@ services:
     ports:
       - 8080:8080
     depends_on:
-      - db
+      - postgresdb
+      - redisdb
     networks:
       - conn
-  db:
+  postgresdb:
     image: postgres
+    container_name: postgresdb
     environment:
       - POSTGRES_PASSWORD=1415
     volumes:
       - pg:/var/lib/postgresql/data
     networks:
       - conn
+  redisdb:
+    image: redis
+    container_name: redisdb
+    volumes:
+      - redis:/data
+    networks:
+      - conn
+    
 
 volumes:
   pg:
+  redis:
 
 networks:
   conn:
