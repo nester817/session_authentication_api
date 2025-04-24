@@ -25,6 +25,6 @@ func NewServer(addr string, h *router.Handler) *Server {
 	}
 }
 
-func (s *Server) Run() {
-
+func (s *Server) Run() error {
+	return s.httpServer.ListenAndServe()
 }

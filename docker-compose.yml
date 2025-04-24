@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    container_name: app
+    environment:
+      - DB_URL=postgres://${DB_USERNAME}:${PSSWORD}@${HOST}:${PORT}/${DB_NAME}
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    networks:
+      - conn
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=1415
+    volumes:
+      - pg:/var/lib/postgresql/data
+    networks:
+      - conn
+
+volumes:
+  pg:
+
+networks:
+  conn:
