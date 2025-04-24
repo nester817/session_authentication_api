@@ -1,7 +1,7 @@
-package storage
+package customer
 
-type User struct {
-	Id       string `json:"id,omitempty"`
+type Customer struct {
+	Id       uint   `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
