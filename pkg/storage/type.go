@@ -2,7 +2,6 @@ package customer
 
 type Customer struct {
 	Id       uint   `json:"id,omitempty"`
-	Name     string `json:"name,omitempty"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email,omitempty"`
+	Password string `json:"password,omitempty"`
 }

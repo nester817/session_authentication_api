@@ -1,4 +1,4 @@
-package storage
+package storagePostgres
 
 import (
 	"context"
@@ -8,11 +8,11 @@ import (
 	customer "github.com/nester817/session_authentication_api.git/pkg/storage"
 )
 
-type Db struct {
+type DbPostgres struct {
 	client *pgxpool.Pool
 }
 
-func NewDb(ctx context.Context, addr string, attempt int) (*Db, error) {
+func NewDbPostgres(ctx context.Context, addr string, attempt int) (*DbPostgres, error) {
 	config, err := pgxpool.ParseConfig(addr)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,6 @@ func NewDb(ctx context.Context, addr string, attempt int) (*Db, error) {
 				ctx,
 				`CREATE TABLE IF NOT EXISTS public.customer (
     				id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    				name TEXT NOT NULL,
     				email TEXT NOT NULL UNIQUE,
 					password TEXT NOT NULL
 				);`,
@@ -45,7 +44,7 @@ func NewDb(ctx context.Context, addr string, attempt int) (*Db, error) {
 				return nil, err
 			}
 
-			return &Db{
+			return &DbPostgres{
 				client: client,
 			}, nil
 		} else {
@@ -58,39 +57,42 @@ func NewDb(ctx context.Context, addr string, attempt int) (*Db, error) {
 	return nil, err
 }
 
-func (db *Db) GetCustomerByEmail(ctx context.Context, email, password string) (*customer.Customer, error) {
+func (db *DbPostgres) GetCustomer(ctx context.Context, email string) (*customer.Customer, error) {
 	var user customer.Customer
 
 	if err := db.client.QueryRow(
 		ctx,
-		`SELECT id, name, email 
+		`SELECT id, email, password
 		FROM public.customer 
-		WHERE email = $1 AND password = $2`,
-		email, password,
-	).Scan(&user.Id, &user.Name, &user.Email); err != nil {
+		WHERE email = $1`,
+		email,
+	).Scan(&user.Id, &user.Email, &user.Password); err != nil {
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (db *Db) InsertCustomer(ctx context.Context, user customer.Customer) error {
-	_, err := db.client.Exec(
-		ctx,
-		`INSERT INTO public.customer (name, email, password) 
-		VALUES ($1, $2, $3)`,
-		user.Name, user.Email, user.Password,
-	)
-	return err
+func (db *DbPostgres) GetCustomerById(ctx context.Context, id string) (*customer.Customer, error) {
+	var customer customer.Customer
+
+	if err := db.client.QueryRow(ctx, `
+		SELECT email
+		FROM public.customer 
+		WHERE id = $1
+	`, id).Scan(&customer.Email); err != nil {
+		return nil, err
+	}
+
+	return &customer, nil
 }
 
-func (db *Db) DeleteCustomer(ctx context.Context, email, password string) error {
+func (db *DbPostgres) InsertCustomer(ctx context.Context, user *customer.Customer) error {
 	_, err := db.client.Exec(
 		ctx,
-		`DELETE FROM public.customer
-		WHERE email = $1 AND password = $2`,
-		email, password,
+		`INSERT INTO public.customer (email, password)
+		VALUES ($1, $2)`,
+		user.Email, &user.Password,
 	)
-
 	return err
 }

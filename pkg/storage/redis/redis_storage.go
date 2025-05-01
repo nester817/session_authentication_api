@@ -1,4 +1,4 @@
-package redis
+package storageRedis
 
 import (
 	"context"
@@ -7,32 +7,30 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type ClientRedis struct {
+type DbRedis struct {
 	client *redis.Client
 }
 
-func NewClientRedis(addr string) *ClientRedis {
+func NewDbRedis(addr string) *DbRedis {
 	client := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: "",
 		DB:       0,
 	})
 
-	return &ClientRedis{
+	return &DbRedis{
 		client: client,
 	}
 }
 
-func (cr *ClientRedis) Get(ctx context.Context, key string) (string, error) {
-	value, err := cr.client.Get(ctx, key).Result()
-	if err != nil {
-		return "", err
-	}
-
-	return value, err
+func (db *DbRedis) Get(ctx context.Context, key string) (string, error) {
+	return db.client.Get(ctx, key).Result()
 }
 
-func (cr *ClientRedis) Set(ctx context.Context, key, value string) error {
-	err := cr.client.Set(ctx, key, value, 24*time.Hour).Err()
-	return err
+func (db *DbRedis) Set(ctx context.Context, key, value string) error {
+	return db.client.Set(ctx, key, value, 24*24*time.Hour).Err()
+}
+
+func (db *DbRedis) Delete(ctx context.Context, key string) error {
+	return db.client.Del(ctx, key).Err()
 }

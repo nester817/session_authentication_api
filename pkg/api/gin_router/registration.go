@@ -16,35 +16,28 @@ func (h *Handler) AddProfile(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.db.InsertCustomer(ctx.Request.Context(), customer); err != nil {
-		ctx.IndentedJSON(http.StatusInternalServerError, gin.H{
+	if len(customer.Password) < 6 {
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{
+			"error": "incorrect password",
+		})
+	}
+
+	hashPassword, err := HashPassword([]byte(customer.Password))
+	if err != nil {
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	customer.Password = string(hashPassword)
+
+	if err := h.sqlDb.InsertCustomer(ctx.Request.Context(), &customer); err != nil {
+		ctx.IndentedJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
 	ctx.IndentedJSON(http.StatusOK, customer)
-}
-
-func (h *Handler) DeleteProfile(ctx *gin.Context) {
-	var customerConfiguration customer.Customer
-	if err := ctx.ShouldBindJSON(&customerConfiguration); err != nil {
-		ctx.IndentedJSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	if err := h.db.DeleteCustomer(
-		ctx.Request.Context(),
-		customerConfiguration.Email,
-		customerConfiguration.Password,
-	); err != nil {
-		ctx.IndentedJSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	ctx.IndentedJSON(http.StatusOK, customerConfiguration.Email)
 }
