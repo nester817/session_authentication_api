@@ -3,19 +3,17 @@ package server
 import (
 	"net/http"
 	"time"
-
-	router "github.com/nester817/session_authentication_api.git/pkg/api/gin_router"
 )
 
 type Server struct {
 	httpServer http.Server
 }
 
-func NewServer(addr string, h *router.Handler) *Server {
+func NewServer(addr string, h http.Handler) *Server {
 	return &Server{
 		httpServer: http.Server{
 			Addr:    addr,
-			Handler: h.InitRouter(),
+			Handler: h,
 
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 10 * time.Second,
@@ -25,6 +23,6 @@ func NewServer(addr string, h *router.Handler) *Server {
 	}
 }
 
-func (s *Server) Run() {
-
+func (s *Server) Run() error {
+	return s.httpServer.ListenAndServe()
 }

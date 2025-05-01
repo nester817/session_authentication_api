@@ -1,0 +1,38 @@
+
+services:
+  app:
+    build: .
+    container_name: app
+    environment:
+      - DB_URL=postgres://${DB_USERNAME}:${PSSWORD}@${HOST}:${PORT}/${DB_NAME}
+      - CACHE_URL=${DB_CACHE_HOST}:${DB_CACHE_PORT}
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgresdb
+      - redisdb
+    networks:
+      - conn
+  postgresdb:
+    image: postgres
+    container_name: postgresdb
+    environment:
+      - POSTGRES_PASSWORD=1415
+    volumes:
+      - pg:/var/lib/postgresql/data
+    networks:
+      - conn
+  redisdb:
+    image: redis
+    container_name: redisdb
+    volumes:
+      - redis:/data
+    networks:
+      - conn
+    
+volumes:
+  pg:
+  redis:
+
+networks:
+  conn:
